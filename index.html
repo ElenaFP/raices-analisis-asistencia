@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis de Faltas y Retrasos de Asistencia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #764ba2;
+            background: #f0f1f5;
+        }
+
+        .upload-section.dragover {
+            border-color: #38ef7d;
+            background: #e8f5e9;
+            transform: scale(1.02);
+        }
+
+        .upload-section input[type="file"] {
+            display: none;
+        }
+
+        .upload-label {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: transform 0.2s ease;
+        }
+
+        .upload-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .file-info {
+            margin-top: 15px;
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .evaluation-section {
+            margin-bottom: 50px;
+        }
+
+        .evaluation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .evaluation-title {
+            font-size: 1.8em;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(17, 153, 142, 0.4);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 16px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        th.number {
+            text-align: right;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        td.number {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+            font-weight: 500;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        tbody tr:last-child {
+            background: #fff3cd;
+            font-weight: bold;
+        }
+
+        tbody tr:last-child:hover {
+            background: #ffe69c;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .evaluation-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            table {
+                font-size: 0.85em;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Análisis de Faltas y Retrasos</h1>
+        <p class="subtitle" id="subtitle">Análisis de asistencia por evaluaciones</p>
+
+        <div class="upload-section" id="uploadSection">
+            <input type="file" id="csvFile" accept=".csv,.CSV" />
+            <label for="csvFile" class="upload-label">
+                📁 Seleccionar archivo CSV
+            </label>
+            <div class="file-info" id="fileInfo">
+                o arrastra el archivo aquí
+            </div>
+        </div>
+
+        <div class="error" id="error"></div>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Procesando datos...</p>
+        </div>
+
+        <div class="results" id="results">
+            <div class="evaluation-section">
+                <div class="evaluation-header">
+                    <h2 class="evaluation-title" id="title1ev">1ª Evaluación</h2>
+                    <button class="download-btn" onclick="downloadCSV('1ev')">
+                        ⬇️ Descargar CSV
+                    </button>
+                </div>
+                <div id="table1ev"></div>
+            </div>
+
+            <div class="evaluation-section">
+                <div class="evaluation-header">
+                    <h2 class="evaluation-title" id="title2ev">2ª Evaluación</h2>
+                    <button class="download-btn" onclick="downloadCSV('2ev')">
+                        ⬇️ Descargar CSV
+                    </button>
+                </div>
+                <div id="table2ev"></div>
+            </div>
+
+            <div class="evaluation-section">
+                <div class="evaluation-header">
+                    <h2 class="evaluation-title" id="title3ev">3ª Evaluación</h2>
+                    <button class="download-btn" onclick="downloadCSV('3ev')">
+                        ⬇️ Descargar CSV
+                    </button>
+                </div>
+                <div id="table3ev"></div>
+            </div>
+
+            <div class="evaluation-section">
+                <div class="evaluation-header">
+                    <h2 class="evaluation-title" id="titletotal">Total del Curso</h2>
+                    <button class="download-btn" onclick="downloadCSV('total')">
+                        ⬇️ Descargar CSV
+                    </button>
+                </div>
+                <div id="tabletotal"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let processedData = {};
+        let annoCurso = '';
+
+        // Configurar drag & drop
+        const uploadSection = document.getElementById('uploadSection');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadSection.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadSection.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadSection.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            uploadSection.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            uploadSection.classList.remove('dragover');
+        }
+
+        uploadSection.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0) {
+                const file = files[0];
+                // Verificar que sea un archivo CSV
+                if (file.name.toLowerCase().endsWith('.csv')) {
+                    handleFile(file);
+                } else {
+                    showError('Por favor, selecciona un archivo CSV válido.');
+                }
+            }
+        }
+
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file) return;
+
+            // Resetear todo antes de cargar nuevo archivo
+            processedData = {};
+            annoCurso = '';
+
+            // Resetear interfaz
+            document.getElementById('fileInfo').textContent = `📄 ${file.name}`;
+            document.getElementById('subtitle').textContent = 'Análisis de asistencia por evaluaciones';
+            document.getElementById('title1ev').textContent = '1ª Evaluación';
+            document.getElementById('title2ev').textContent = '2ª Evaluación';
+            document.getElementById('title3ev').textContent = '3ª Evaluación';
+            document.getElementById('titletotal').textContent = 'Total del Curso';
+
+            // Limpiar tablas
+            document.getElementById('table1ev').innerHTML = '';
+            document.getElementById('table2ev').innerHTML = '';
+            document.getElementById('table3ev').innerHTML = '';
+            document.getElementById('tabletotal').innerHTML = '';
+
+            // Mostrar loading, ocultar error y resultados
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('error').classList.remove('active');
+            document.getElementById('results').classList.remove('active');
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const csvContent = event.target.result;
+                    processCSV(csvContent);
+                    document.getElementById('loading').classList.remove('active');
+                    document.getElementById('results').classList.add('active');
+                } catch (error) {
+                    showError('Error al procesar el archivo: ' + error.message);
+                    document.getElementById('loading').classList.remove('active');
+                }
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function parseCSV(text) {
+            const lines = [];
+            let currentLine = [];
+            let currentField = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const nextChar = text[i + 1];
+
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        currentField += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    currentLine.push(currentField);
+                    currentField = '';
+                } else if ((char === '\n' || char === '\r') && !inQuotes) {
+                    if (currentField || currentLine.length > 0) {
+                        currentLine.push(currentField);
+                        lines.push(currentLine);
+                        currentLine = [];
+                        currentField = '';
+                    }
+                    if (char === '\r' && nextChar === '\n') {
+                        i++;
+                    }
+                } else {
+                    currentField += char;
+                }
+            }
+
+            if (currentField || currentLine.length > 0) {
+                currentLine.push(currentField);
+                lines.push(currentLine);
+            }
+
+            return lines;
+        }
+
+        function processCSV(csvContent) {
+            const lines = parseCSV(csvContent);
+            const headers = lines[0];
+
+            const indices = {
+                anno: headers.indexOf('C_ANNO'),
+                curso: headers.indexOf('CURSO'),
+                nia: headers.indexOf('NIA'),
+                faltas1: headers.indexOf('FALTAS_ASISTENCIA_1EV'),
+                retrasos1: headers.indexOf('RETRASOS_ASISTENCIA_1EV'),
+                faltas2: headers.indexOf('FALTAS_ASISTENCIA_2EV'),
+                retrasos2: headers.indexOf('RETRASOS_ASISTENCIA_2EV'),
+                faltas3: headers.indexOf('FALTAS_ASISTENCIA_3EV'),
+                retrasos3: headers.indexOf('RETRASOS_ASISTENCIA_3EV')
+            };
+
+            const data1ev = {};
+            const data2ev = {};
+            const data3ev = {};
+            const niasPorCurso = {};
+
+            for (let i = 1; i < lines.length; i++) {
+                const row = lines[i];
+                if (row.length < headers.length) continue;
+
+                if (!annoCurso) {
+                    annoCurso = row[indices.anno];
+                }
+
+                let curso = row[indices.curso];
+                const nia = row[indices.nia];
+
+                // Agrupaciones
+                if (curso.startsWith('1º de Bachillerato')) {
+                    curso = '1º de Bachillerato';
+                } else if (curso.startsWith('2º de Bachillerato')) {
+                    curso = '2º de Bachillerato';
+                } else if (curso === '1º Programa de Diversificación Curricular (LOMLOE)') {
+                    curso = '3º de E.S.O. (LOMLOE)';
+                } else if (curso === '2º Programa de Diversificación Curricular (LOMLOE)') {
+                    curso = '4º de E.S.O. (LOMLOE)';
+                }
+
+                // Inicializar estructuras
+                if (!data1ev[curso]) {
+                    data1ev[curso] = { faltas: 0, retrasos: 0 };
+                    data2ev[curso] = { faltas: 0, retrasos: 0 };
+                    data3ev[curso] = { faltas: 0, retrasos: 0 };
+                    niasPorCurso[curso] = new Set();
+                }
+
+                // Acumular datos
+                data1ev[curso].faltas += parseInt(row[indices.faltas1]) || 0;
+                data1ev[curso].retrasos += parseInt(row[indices.retrasos1]) || 0;
+                data2ev[curso].faltas += parseInt(row[indices.faltas2]) || 0;
+                data2ev[curso].retrasos += parseInt(row[indices.retrasos2]) || 0;
+                data3ev[curso].faltas += parseInt(row[indices.faltas3]) || 0;
+                data3ev[curso].retrasos += parseInt(row[indices.retrasos3]) || 0;
+
+                niasPorCurso[curso].add(nia);
+            }
+
+            // Calcular totales
+            const dataTotal = {};
+            for (const curso in data1ev) {
+                dataTotal[curso] = {
+                    faltas: data1ev[curso].faltas + data2ev[curso].faltas + data3ev[curso].faltas,
+                    retrasos: data1ev[curso].retrasos + data2ev[curso].retrasos + data3ev[curso].retrasos
+                };
+            }
+
+            processedData = {
+                '1ev': { data: data1ev, nias: niasPorCurso },
+                '2ev': { data: data2ev, nias: niasPorCurso },
+                '3ev': { data: data3ev, nias: niasPorCurso },
+                'total': { data: dataTotal, nias: niasPorCurso }
+            };
+
+            // Actualizar subtítulo y títulos con el año del curso
+            document.getElementById('subtitle').textContent = `Análisis de asistencia por evaluaciones - Curso ${annoCurso}`;
+            document.getElementById('title1ev').textContent = `1ª Evaluación (Curso ${annoCurso})`;
+            document.getElementById('title2ev').textContent = `2ª Evaluación (Curso ${annoCurso})`;
+            document.getElementById('title3ev').textContent = `3ª Evaluación (Curso ${annoCurso})`;
+            document.getElementById('titletotal').textContent = `Total del Curso (Curso ${annoCurso})`;
+
+            renderTable('1ev', document.getElementById('table1ev'));
+            renderTable('2ev', document.getElementById('table2ev'));
+            renderTable('3ev', document.getElementById('table3ev'));
+            renderTable('total', document.getElementById('tabletotal'));
+        }
+
+        function ordenCurso(curso) {
+            const orden = {
+                '1º de E.S.O. (LOMLOE)': 1,
+                '2º de E.S.O. (LOMLOE)': 2,
+                '3º de E.S.O. (LOMLOE)': 3,
+                '4º de E.S.O. (LOMLOE)': 4,
+                '1º de Bachillerato': 5,
+                '2º de Bachillerato': 6
+            };
+            return orden[curso] || 99;
+        }
+
+        function renderTable(evaluation, container) {
+            const { data, nias } = processedData[evaluation];
+
+            // Ordenar por nivel educativo
+            const sortedCursos = Object.keys(data).sort((a, b) => ordenCurso(a) - ordenCurso(b));
+
+            let html = '<table><thead><tr>';
+            html += '<th>CURSO</th>';
+            html += '<th class="number">ALUMNOS</th>';
+            html += '<th class="number">FALTAS</th>';
+            html += '<th class="number">RETRASOS</th>';
+            html += '<th class="number">MEDIA FALTAS</th>';
+            html += '<th class="number">MEDIA RETRASOS</th>';
+            html += '</tr></thead><tbody>';
+
+            let totalFaltas = 0;
+            let totalRetrasos = 0;
+            let totalAlumnos = new Set();
+
+            for (const curso of sortedCursos) {
+                const numAlumnos = nias[curso].size;
+                const faltas = data[curso].faltas;
+                const retrasos = data[curso].retrasos;
+                const mediaFaltas = numAlumnos > 0 ? (faltas / numAlumnos).toFixed(2) : '0.00';
+                const mediaRetrasos = numAlumnos > 0 ? (retrasos / numAlumnos).toFixed(2) : '0.00';
+
+                html += '<tr>';
+                html += `<td>${curso}</td>`;
+                html += `<td class="number">${numAlumnos}</td>`;
+                html += `<td class="number">${faltas}</td>`;
+                html += `<td class="number">${retrasos}</td>`;
+                html += `<td class="number">${mediaFaltas}</td>`;
+                html += `<td class="number">${mediaRetrasos}</td>`;
+                html += '</tr>';
+
+                totalFaltas += faltas;
+                totalRetrasos += retrasos;
+                nias[curso].forEach(nia => totalAlumnos.add(nia));
+            }
+
+            const numTotalAlumnos = totalAlumnos.size;
+            const mediaGeneralFaltas = numTotalAlumnos > 0 ? (totalFaltas / numTotalAlumnos).toFixed(2) : '0.00';
+            const mediaGeneralRetrasos = numTotalAlumnos > 0 ? (totalRetrasos / numTotalAlumnos).toFixed(2) : '0.00';
+
+            html += '<tr>';
+            html += '<td><strong>TOTAL GENERAL</strong></td>';
+            html += `<td class="number"><strong>${numTotalAlumnos}</strong></td>`;
+            html += `<td class="number"><strong>${totalFaltas}</strong></td>`;
+            html += `<td class="number"><strong>${totalRetrasos}</strong></td>`;
+            html += `<td class="number"><strong>${mediaGeneralFaltas}</strong></td>`;
+            html += `<td class="number"><strong>${mediaGeneralRetrasos}</strong></td>`;
+            html += '</tr>';
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function downloadCSV(evaluation) {
+            const { data, nias } = processedData[evaluation];
+            const sortedCursos = Object.keys(data).sort((a, b) => ordenCurso(a) - ordenCurso(b));
+
+            let csv = 'CURSO,ALUMNOS,FALTAS,RETRASOS,MEDIA_FALTAS,MEDIA_RETRASOS\n';
+
+            let totalFaltas = 0;
+            let totalRetrasos = 0;
+            let totalAlumnos = new Set();
+
+            for (const curso of sortedCursos) {
+                const numAlumnos = nias[curso].size;
+                const faltas = data[curso].faltas;
+                const retrasos = data[curso].retrasos;
+                const mediaFaltas = numAlumnos > 0 ? (faltas / numAlumnos).toFixed(2) : '0.00';
+                const mediaRetrasos = numAlumnos > 0 ? (retrasos / numAlumnos).toFixed(2) : '0.00';
+
+                csv += `"${curso}",${numAlumnos},${faltas},${retrasos},${mediaFaltas},${mediaRetrasos}\n`;
+
+                totalFaltas += faltas;
+                totalRetrasos += retrasos;
+                nias[curso].forEach(nia => totalAlumnos.add(nia));
+            }
+
+            const numTotalAlumnos = totalAlumnos.size;
+            const mediaGeneralFaltas = numTotalAlumnos > 0 ? (totalFaltas / numTotalAlumnos).toFixed(2) : '0.00';
+            const mediaGeneralRetrasos = numTotalAlumnos > 0 ? (totalRetrasos / numTotalAlumnos).toFixed(2) : '0.00';
+
+            csv += `"TOTAL GENERAL",${numTotalAlumnos},${totalFaltas},${totalRetrasos},${mediaGeneralFaltas},${mediaGeneralRetrasos}\n`;
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+
+            const fileName = evaluation === 'total' ?
+                `${annoCurso}_TOTAL.csv` :
+                `${annoCurso}_${evaluation.toUpperCase()}.csv`;
+
+            link.setAttribute('href', url);
+            link.setAttribute('download', fileName);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('active');
+        }
+    </script>
+</body>
+</html>
