@@ -461,6 +461,8 @@
                 anno: headers.indexOf('C_ANNO'),
                 curso: headers.indexOf('CURSO'),
                 nia: headers.indexOf('NIA'),
+                estado: headers.indexOf('ESTADO'),
+                materiaGeneral: headers.indexOf('MATERIA_GENERAL'),
                 faltas1: headers.indexOf('FALTAS_ASISTENCIA_1EV'),
                 retrasos1: headers.indexOf('RETRASOS_ASISTENCIA_1EV'),
                 faltas2: headers.indexOf('FALTAS_ASISTENCIA_2EV'),
@@ -473,17 +475,35 @@
             const data2ev = {};
             const data3ev = {};
             const niasPorCurso = {};
+            const niaMateriasProcesadas = new Set();
 
             for (let i = 1; i < lines.length; i++) {
                 const row = lines[i];
                 if (row.length < headers.length) continue;
+
+                // Filtro 1: Ignorar alumnos con asignaturas pendientes
+                const estado = (row[indices.estado] || '').trim().toLowerCase();
+                if (estado === 'pendiente') {
+                    continue;
+                }
+
+                // Filtro 2: Para un mismo NIA, si aparece duplicada la misma MATERIA_GENERAL
+                // con ESTADO "matriculada", solo contar la primera ocurrencia
+                const nia = row[indices.nia];
+                const materiaGeneral = row[indices.materiaGeneral] || '';
+                const niaMateriaKey = `${nia}|${materiaGeneral}`;
+
+                if (niaMateriasProcesadas.has(niaMateriaKey)) {
+                    continue; // Ya procesamos esta combinación, ignorar duplicado
+                }
+
+                niaMateriasProcesadas.add(niaMateriaKey);
 
                 if (!annoCurso) {
                     annoCurso = row[indices.anno];
                 }
 
                 let curso = row[indices.curso];
-                const nia = row[indices.nia];
 
                 // Agrupaciones
                 if (curso.startsWith('1º de Bachillerato')) {

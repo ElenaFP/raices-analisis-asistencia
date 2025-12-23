@@ -18,6 +18,14 @@ El script lee archivos CSV con información de asistencia de alumnos y procesa:
 - **Retrasos de asistencia** de las tres evaluaciones (RETRASOS_ASISTENCIA_1EV, 2EV, 3EV)
 - **Identificación única de alumnos** mediante el campo NIA (Número de Identificación del Alumno)
 
+#### Filtros Aplicados
+
+El sistema implementa dos filtros importantes para garantizar la precisión de los datos:
+
+1. **Filtro de asignaturas pendientes**: Se ignoran todos los registros con `ESTADO = "pendiente"`, ya que estos corresponden a asignaturas de cursos anteriores y no deben contabilizarse en las estadísticas del curso actual.
+
+2. **Filtro de duplicados por materia**: Si un mismo NIA aparece múltiples veces con la misma `MATERIA_GENERAL` y `ESTADO = "matriculada"`, solo se procesa la primera ocurrencia. Esto evita duplicar las faltas y retrasos cuando un alumno tiene registros duplicados en el sistema.
+
 ### 2. Agrupaciones Inteligentes de Cursos
 
 El script implementa agrupaciones automáticas para consolidar datos:
@@ -267,6 +275,7 @@ CSV generado: 2024_1EV.csv
 ## Notas Técnicas
 
 ### Comunes a Ambas Herramientas
+- **Filtros de datos**: Se ignoran asignaturas con ESTADO "pendiente" y se eliminan duplicados de la misma MATERIA_GENERAL por NIA
 - **Manejo de valores vacíos**: Los campos vacíos o no numéricos se convierten a 0
 - **Codificación**: Los archivos se manejan con codificación UTF-8
 - **Delimitador**: El CSV de entrada usa coma (`,`) como delimitador
@@ -338,3 +347,4 @@ Proyecto desarrollado en diciembre de 2025 para el análisis de asistencia escol
 - **v2.5** (Diciembre 2025) - Script Python acepta archivo CSV como parámetro de línea de comandos
 - **v3.0** (Diciembre 2025) - Preparación para GitHub Pages: renombrado a index.html, workflow de GitHub Actions, renombrado script Python
 - **v3.0.1** (Diciembre 2025) - Configuración final: nombre del repositorio (raices-analisis-asistencia), URLs actualizadas, guía de despliegue (DEPLOY.md)
+- **v3.1** (Diciembre 2025) - Implementación de filtros de datos: ignorar asignaturas pendientes y eliminar duplicados por MATERIA_GENERAL

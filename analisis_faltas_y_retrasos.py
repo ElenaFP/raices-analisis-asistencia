@@ -36,18 +36,35 @@ retrasos_3ev = defaultdict(int)
 nias_por_curso = defaultdict(set)
 # Variable para guardar el año del curso
 anno_curso = None
+# Set para rastrear combinaciones (NIA, MATERIA_GENERAL) ya procesadas
+nia_materia_procesadas = set()
 
 # Leer y procesar el CSV
 with open(csv_file, 'r', encoding='utf-8') as f:
     reader = csv.DictReader(f, delimiter=',')
 
     for row in reader:
+        # Filtro 1: Ignorar alumnos con asignaturas pendientes
+        estado = row.get('ESTADO', '').strip().lower()
+        if estado == 'pendiente':
+            continue
+
+        # Filtro 2: Para un mismo NIA, si aparece duplicada la misma MATERIA_GENERAL
+        # con ESTADO "matriculada", solo contar la primera ocurrencia
+        nia = row['NIA']
+        materia_general = row.get('MATERIA_GENERAL', '')
+        nia_materia_key = (nia, materia_general)
+
+        if nia_materia_key in nia_materia_procesadas:
+            continue  # Ya procesamos esta combinación, ignorar duplicado
+
+        nia_materia_procesadas.add(nia_materia_key)
+
         # Capturar el año del curso (solo la primera vez)
         if anno_curso is None:
             anno_curso = row['C_ANNO']
 
         curso = row['CURSO']
-        nia = row['NIA']
 
         # Leer datos de las tres evaluaciones
         faltas_1_str = row['FALTAS_ASISTENCIA_1EV']
