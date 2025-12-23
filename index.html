@@ -18,6 +18,53 @@
             padding: 20px;
         }
 
+        /* Navigation Banner */
+        .main-nav {
+            max-width: 1400px;
+            margin: 0 auto 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            text-decoration: none;
+            color: #475569;
+            font-weight: 600;
+            padding: 10px 25px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .nav-btn:hover {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-btn.help {
+            border: 2px solid #e2e8f0;
+            color: #64748b;
+        }
+
+        .nav-btn.help:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -271,6 +318,16 @@
                 padding: 20px;
             }
 
+            .main-nav {
+                flex-direction: column;
+                padding: 10px;
+            }
+
+            .nav-btn {
+                width: 100%;
+                text-align: center;
+            }
+
             h1 {
                 font-size: 1.8em;
             }
@@ -291,8 +348,13 @@
     </style>
 </head>
 <body>
+    <nav class="main-nav">
+        <a href="https://elenafp.github.io/raices-analisis-asistencia" class="nav-btn active">Análisis de Asistencia</a>
+        <a href="https://elenafp.github.io/raices-analisis-notas/" class="nav-btn">Análisis de Notas</a>
+        <a href="https://github.com/ElenaFP/raices-analisis-asistencia?tab=readme-ov-file#-c%C3%B3mo-usar" class="nav-btn help" target="_blank">❓ Ayuda</a>
+    </nav>
     <div class="container">
-        <h1>📊 Análisis de Faltas y Retrasos</h1>
+        <h1>📊 Análisis de Asistencia</h1>
         <p class="subtitle" id="subtitle">Análisis de asistencia por evaluaciones</p>
 
         <div class="upload-section" id="uploadSection">
