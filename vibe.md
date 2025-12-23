@@ -99,6 +99,7 @@ Ideal para docentes y personal no técnico. No requiere conocimientos de program
 
 #### Características
 - ✅ **Interfaz visual moderna e intuitiva**
+- ✅ **Navegación por pestañas** - organiza las evaluaciones (1ª, 2ª, 3ª, Total) en pestañas individuales
 - ✅ **Un solo archivo** - fácil de compartir por email
 - ✅ **Sin instalación** - funciona directamente en el navegador
 - ✅ **Offline** - no necesita conexión a internet
@@ -117,7 +118,7 @@ Ideal para docentes y personal no técnico. No requiere conocimientos de program
 2. **Cargar CSV**:
    - Opción 1: Clic en "Seleccionar archivo CSV"
    - Opción 2: Arrastra y suelta el archivo sobre el área de carga
-3. **Ver resultados**: Las 4 tablas aparecen automáticamente
+3. **Ver resultados**: Navega por las pestañas para ver cada evaluación
 4. **Descargar**: Botón "Descargar CSV" disponible en cada tabla
 
 #### Compatibilidad
@@ -348,3 +349,4 @@ Proyecto desarrollado en diciembre de 2025 para el análisis de asistencia escol
 - **v3.0** (Diciembre 2025) - Preparación para GitHub Pages: renombrado a index.html, workflow de GitHub Actions, renombrado script Python
 - **v3.0.1** (Diciembre 2025) - Configuración final: nombre del repositorio (raices-analisis-asistencia), URLs actualizadas, guía de despliegue (DEPLOY.md)
 - **v3.1** (Diciembre 2025) - Implementación de filtros de datos: ignorar asignaturas pendientes y eliminar duplicados por MATERIA_GENERAL
+- **v3.2** (Diciembre 2025) - Actualización de interfaz: Diseño unificado con el proyecto de aprobados e implementación de navegación por pestañas para las evaluaciones.

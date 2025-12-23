@@ -97,8 +97,50 @@
             display: block;
         }
 
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: #f1f5f9;
+            color: #64748b;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            background: #e2e8f0;
+            color: #333;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
         .evaluation-section {
             margin-bottom: 50px;
+            display: none; /* Hidden by default for tabs */
+            animation: fadeIn 0.4s ease;
+        }
+
+        .evaluation-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .evaluation-header {
@@ -270,7 +312,15 @@
         </div>
 
         <div class="results" id="results">
-            <div class="evaluation-section">
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('section-1ev', this)">1ª Evaluación</button>
+                <button class="tab-btn" onclick="switchTab('section-2ev', this)">2ª Evaluación</button>
+                <button class="tab-btn" onclick="switchTab('section-3ev', this)">3ª Evaluación</button>
+                <button class="tab-btn" onclick="switchTab('section-total', this)">Total del Curso</button>
+            </div>
+
+            <div id="section-1ev" class="evaluation-section active">
                 <div class="evaluation-header">
                     <h2 class="evaluation-title" id="title1ev">1ª Evaluación</h2>
                     <button class="download-btn" onclick="downloadCSV('1ev')">
@@ -280,7 +330,7 @@
                 <div id="table1ev"></div>
             </div>
 
-            <div class="evaluation-section">
+            <div id="section-2ev" class="evaluation-section">
                 <div class="evaluation-header">
                     <h2 class="evaluation-title" id="title2ev">2ª Evaluación</h2>
                     <button class="download-btn" onclick="downloadCSV('2ev')">
@@ -290,7 +340,7 @@
                 <div id="table2ev"></div>
             </div>
 
-            <div class="evaluation-section">
+            <div id="section-3ev" class="evaluation-section">
                 <div class="evaluation-header">
                     <h2 class="evaluation-title" id="title3ev">3ª Evaluación</h2>
                     <button class="download-btn" onclick="downloadCSV('3ev')">
@@ -300,7 +350,7 @@
                 <div id="table3ev"></div>
             </div>
 
-            <div class="evaluation-section">
+            <div id="section-total" class="evaluation-section">
                 <div class="evaluation-header">
                     <h2 class="evaluation-title" id="titletotal">Total del Curso</h2>
                     <button class="download-btn" onclick="downloadCSV('total')">
@@ -368,6 +418,17 @@
                 handleFile(file);
             }
         });
+        
+        function switchTab(sectionId, btnElement) {
+            // Hide all sections
+            document.querySelectorAll('.evaluation-section').forEach(el => el.classList.remove('active'));
+            // Show target
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            if(btnElement) btnElement.classList.add('active');
+        }
 
         function handleFile(file) {
             if (!file) return;
@@ -402,6 +463,9 @@
                     processCSV(csvContent);
                     document.getElementById('loading').classList.remove('active');
                     document.getElementById('results').classList.add('active');
+                    
+                    // Reset to first tab
+                    switchTab('section-1ev', document.querySelector('.tab-btn'));
                 } catch (error) {
                     showError('Error al procesar el archivo: ' + error.message);
                     document.getElementById('loading').classList.remove('active');
