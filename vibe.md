@@ -350,4 +350,4 @@ Proyecto desarrollado en diciembre de 2025 para el análisis de asistencia escol
 - **v3.0.1** (Diciembre 2025) - Configuración final: nombre del repositorio (raices-analisis-asistencia), URLs actualizadas, guía de despliegue (DEPLOY.md)
 - **v3.1** (Diciembre 2025) - Implementación de filtros de datos: ignorar asignaturas pendientes y eliminar duplicados por MATERIA_GENERAL
 - **v3.2** (Diciembre 2025) - Actualización de interfaz: Diseño unificado con el proyecto de aprobados e implementación de navegación por pestañas para las evaluaciones.
-- **v3.3** (Diciembre 2025) - Añadido banner de navegación inter-aplicaciones y normalización de títulos para coherencia visual.
+- **v3.3** (Diciembre 2025) - Añadido banner de navegación inter-aplicaciones y normalización de títulos y subtítulos para coherencia visual.
